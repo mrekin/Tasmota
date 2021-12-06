@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [10.1.0] 20211208
 - Release Noelle
 
-## [10.0.0.4]
+## [10.0.0.4] 20211208
 ### Added
 - (Internal) Support for FUNC_BUTTON_MULTI_PRESSED in (light)drivers
 - Support for GPE Multi color smart light as sold by Action in the Netherlands
