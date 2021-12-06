@@ -66,12 +66,12 @@ Latest released binaries can be downloaded from
 - http://ota.tasmota.com/tasmota/release
 
 Historical binaries can be downloaded from
-- http://ota.tasmota.com/tasmota/release-10.0.0
+- http://ota.tasmota.com/tasmota/release-10.1.0
 
 The latter links can be used for OTA upgrades too like ``OtaUrl http://ota.tasmota.com/tasmota/release/tasmota.bin.gz``
 
 ### ESP32 based
-The following binary downloads have been compiled with ESP32/Arduino library core version **1.0.7.4**.
+The following binary downloads have been compiled with ESP32/Arduino library core version **2.0.1.1**.
 
 - **tasmota32.bin** = The Tasmota version with most drivers including additional sensors and KNX for 4M+ flash.  **RECOMMENDED RELEASE BINARY**
 - **tasmota32c3.bin** = The Tasmota version with most drivers including additional sensors and KNX for ESP32-C3 and 4M+ flash.
@@ -90,7 +90,7 @@ Latest released binaries can be downloaded from
 - http://ota.tasmota.com/tasmota32/release
 
 Historical binaries can be downloaded from
-- http://ota.tasmota.com/tasmota32/release-10.0.0
+- http://ota.tasmota.com/tasmota32/release-10.1.0
 
 The latter links can be used for OTA upgrades too like ``OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32.bin``
 
@@ -100,7 +100,7 @@ The latter links can be used for OTA upgrades too like ``OtaUrl http://ota.tasmo
 
 [Complete list](BUILDS.md) of available feature and sensors.
 
-## Changelog v10.0.0.4
+## Changelog v10.1.0 Noelle
 ### Added
 - 1 second heartbeat GPIO
 - (Internal) Support for FUNC_BUTTON_MULTI_PRESSED in (light)drivers
@@ -144,4 +144,3 @@ The latter links can be used for OTA upgrades too like ``OtaUrl http://ota.tasmo
 
 ### Removed
 - ILI9488 driver in favour of Universal Display driver [#13719](https://github.com/arendst/Tasmota/issues/13719)
-
