@@ -402,6 +402,36 @@ const be_ctypes_structure_t be_lv_meter_indicator_scale_lines = {
     { "width_mod", 16, 0, 0, ctypes_i16, 0 },
 }};
 
+const be_ctypes_structure_t be_lv_chart_series = {
+  13,  /* size in bytes */
+  9,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[9]) {
+    { "color", 8, 0, 0, ctypes_u16, 1 },
+    { "hidden", 12, 0, 1, ctypes_bf, 0 },
+    { "start_point", 10, 0, 0, ctypes_u16, 0 },
+    { "x_axis_sec", 12, 3, 1, ctypes_bf, 0 },
+    { "x_ext_buf_assigned", 12, 1, 1, ctypes_bf, 0 },
+    { "x_points", 0, 0, 0, ctypes_ptr32, 0 },
+    { "y_axis_sec", 12, 4, 1, ctypes_bf, 0 },
+    { "y_ext_buf_assigned", 12, 2, 1, ctypes_bf, 0 },
+    { "y_points", 4, 0, 0, ctypes_ptr32, 0 },
+}};
+
+const be_ctypes_structure_t be_lv_chart_cursor = {
+  14,  /* size in bytes */
+  7,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[7]) {
+    { "color", 6, 0, 0, ctypes_u16, 1 },
+    { "dir", 12, 0, 0, ctypes_u8, 0 },
+    { "point_id", 4, 0, 0, ctypes_u16, 0 },
+    { "pos_set", 13, 0, 1, ctypes_bf, 0 },
+    { "pos_x", 0, 0, 0, ctypes_i16, 0 },
+    { "pos_y", 2, 0, 0, ctypes_i16, 0 },
+    { "ser", 8, 0, 0, ctypes_ptr32, 0 },
+}};
+
 const be_ctypes_structure_t be_lv_obj_class = {
   27,  /* size in bytes */
   10,  /* number of elements */
@@ -433,12 +463,88 @@ const be_ctypes_structure_t be_lv_event = {
     { "user_data", 12, 0, 0, ctypes_ptr32, 0 },
 }};
 
+const be_ctypes_structure_t be_lv_img_header = {
+  4,  /* size in bytes */
+  5,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[5]) {
+    { "always_zero", 0, 5, 3, ctypes_bf, 0 },
+    { "cf", 0, 0, 5, ctypes_bf, 0 },
+    { "h", 2, 5, 11, ctypes_bf, 0 },
+    { "reserved", 1, 0, 2, ctypes_bf, 0 },
+    { "w", 1, 2, 11, ctypes_bf, 0 },
+}};
+
+const be_ctypes_structure_t be_lv_img_dsc = {
+  16,  /* size in bytes */
+  8,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[8]) {
+    { "cf", 4, 0, 5, ctypes_bf, 0 },
+    { "data", 12, 0, 0, ctypes_ptr32, 0 },
+    { "data_size", 8, 0, 0, ctypes_u32, 0 },
+    { "header_always_zero", 0, 5, 3, ctypes_bf, 0 },
+    { "header_cf", 0, 0, 5, ctypes_bf, 0 },
+    { "header_h", 2, 5, 11, ctypes_bf, 0 },
+    { "header_reserved", 1, 0, 2, ctypes_bf, 0 },
+    { "header_w", 1, 2, 11, ctypes_bf, 0 },
+}};
+
+const be_ctypes_structure_t be_lv_style_transition_dsc = {
+  20,  /* size in bytes */
+  5,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[5]) {
+    { "delay", 16, 0, 0, ctypes_u32, 0 },
+    { "path_xcb", 8, 0, 0, ctypes_ptr32, 0 },
+    { "props", 0, 0, 0, ctypes_ptr32, 0 },
+    { "time", 12, 0, 0, ctypes_u32, 0 },
+    { "user_data", 4, 0, 0, ctypes_ptr32, 0 },
+}};
+
+const be_ctypes_structure_t be_lv_color_filter_dsc = {
+  8,  /* size in bytes */
+  2,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[2]) {
+    { "filter_cb", 0, 0, 0, ctypes_ptr32, 0 },
+    { "user_data", 4, 0, 0, ctypes_ptr32, 0 },
+}};
+
+const be_ctypes_structure_t be_lv_timer = {
+  21,  /* size in bytes */
+  6,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[6]) {
+    { "last_run", 4, 0, 0, ctypes_u32, 0 },
+    { "paused", 20, 0, 1, ctypes_bf, 0 },
+    { "period", 0, 0, 0, ctypes_u32, 0 },
+    { "repeat_count", 16, 0, 0, ctypes_i32, 0 },
+    { "timer_cb", 8, 0, 0, ctypes_ptr32, 0 },
+    { "user_data", 12, 0, 0, ctypes_ptr32, 0 },
+}};
+
+const be_ctypes_structure_t be_lv_ts_calibration = {
+  12,  /* size in bytes */
+  5,  /* number of elements */
+  be_ctypes_instance_mappings,
+  (const be_ctypes_structure_item_t[5]) {
+    { "raw_x", 0, 0, 0, ctypes_i16, 0 },
+    { "raw_y", 2, 0, 0, ctypes_i16, 0 },
+    { "state", 8, 0, 0, ctypes_i32, 0 },
+    { "x", 4, 0, 0, ctypes_i16, 0 },
+    { "y", 6, 0, 0, ctypes_i16, 0 },
+}};
+
 static const char * be_ctypes_instance_mappings[] = {
   "lv_color",
   NULL
 };
 
 static be_define_ctypes_class(lv_area, &be_lv_area, &be_class_ctypes, "lv_area");
+static be_define_ctypes_class(lv_chart_cursor, &be_lv_chart_cursor, &be_class_ctypes, "lv_chart_cursor");
+static be_define_ctypes_class(lv_chart_series, &be_lv_chart_series, &be_class_ctypes, "lv_chart_series");
+static be_define_ctypes_class(lv_color_filter_dsc, &be_lv_color_filter_dsc, &be_class_ctypes, "lv_color_filter_dsc");
 static be_define_ctypes_class(lv_draw_img_dsc, &be_lv_draw_img_dsc, &be_class_ctypes, "lv_draw_img_dsc");
 static be_define_ctypes_class(lv_draw_line_dsc, &be_lv_draw_line_dsc, &be_class_ctypes, "lv_draw_line_dsc");
 static be_define_ctypes_class(lv_draw_mask_angle_param, &be_lv_draw_mask_angle_param, &be_class_ctypes, "lv_draw_mask_angle_param");
@@ -455,6 +561,8 @@ static be_define_ctypes_class(lv_draw_mask_radius_param_cfg, &be_lv_draw_mask_ra
 static be_define_ctypes_class(lv_draw_mask_saved, &be_lv_draw_mask_saved, &be_class_ctypes, "lv_draw_mask_saved");
 static be_define_ctypes_class(lv_draw_rect_dsc, &be_lv_draw_rect_dsc, &be_class_ctypes, "lv_draw_rect_dsc");
 static be_define_ctypes_class(lv_event, &be_lv_event, &be_class_ctypes, "lv_event");
+static be_define_ctypes_class(lv_img_dsc, &be_lv_img_dsc, &be_class_ctypes, "lv_img_dsc");
+static be_define_ctypes_class(lv_img_header, &be_lv_img_header, &be_class_ctypes, "lv_img_header");
 static be_define_ctypes_class(lv_meter_indicator, &be_lv_meter_indicator, &be_class_ctypes, "lv_meter_indicator");
 static be_define_ctypes_class(lv_meter_indicator_arc, &be_lv_meter_indicator_arc, &be_class_ctypes, "lv_meter_indicator_arc");
 static be_define_ctypes_class(lv_meter_indicator_needle_img, &be_lv_meter_indicator_needle_img, &be_class_ctypes, "lv_meter_indicator_needle_img");
@@ -464,9 +572,15 @@ static be_define_ctypes_class(lv_meter_scale, &be_lv_meter_scale, &be_class_ctyp
 static be_define_ctypes_class(lv_obj_class, &be_lv_obj_class, &be_class_ctypes, "lv_obj_class");
 static be_define_ctypes_class(lv_point, &be_lv_point, &be_class_ctypes, "lv_point");
 static be_define_ctypes_class(lv_sqrt_res, &be_lv_sqrt_res, &be_class_ctypes, "lv_sqrt_res");
+static be_define_ctypes_class(lv_style_transition_dsc, &be_lv_style_transition_dsc, &be_class_ctypes, "lv_style_transition_dsc");
+static be_define_ctypes_class(lv_timer, &be_lv_timer, &be_class_ctypes, "lv_timer");
+static be_define_ctypes_class(lv_ts_calibration, &be_lv_ts_calibration, &be_class_ctypes, "lv_ts_calibration");
 
 void be_load_ctypes_lvgl_definitions_lib(bvm *vm) {
   ctypes_register_class(vm, &be_class_lv_area, &be_lv_area);
+  ctypes_register_class(vm, &be_class_lv_chart_cursor, &be_lv_chart_cursor);
+  ctypes_register_class(vm, &be_class_lv_chart_series, &be_lv_chart_series);
+  ctypes_register_class(vm, &be_class_lv_color_filter_dsc, &be_lv_color_filter_dsc);
   ctypes_register_class(vm, &be_class_lv_draw_img_dsc, &be_lv_draw_img_dsc);
   ctypes_register_class(vm, &be_class_lv_draw_line_dsc, &be_lv_draw_line_dsc);
   ctypes_register_class(vm, &be_class_lv_draw_mask_angle_param, &be_lv_draw_mask_angle_param);
@@ -483,6 +597,8 @@ void be_load_ctypes_lvgl_definitions_lib(bvm *vm) {
   ctypes_register_class(vm, &be_class_lv_draw_mask_saved, &be_lv_draw_mask_saved);
   ctypes_register_class(vm, &be_class_lv_draw_rect_dsc, &be_lv_draw_rect_dsc);
   ctypes_register_class(vm, &be_class_lv_event, &be_lv_event);
+  ctypes_register_class(vm, &be_class_lv_img_dsc, &be_lv_img_dsc);
+  ctypes_register_class(vm, &be_class_lv_img_header, &be_lv_img_header);
   ctypes_register_class(vm, &be_class_lv_meter_indicator, &be_lv_meter_indicator);
   ctypes_register_class(vm, &be_class_lv_meter_indicator_arc, &be_lv_meter_indicator_arc);
   ctypes_register_class(vm, &be_class_lv_meter_indicator_needle_img, &be_lv_meter_indicator_needle_img);
@@ -492,10 +608,16 @@ void be_load_ctypes_lvgl_definitions_lib(bvm *vm) {
   ctypes_register_class(vm, &be_class_lv_obj_class, &be_lv_obj_class);
   ctypes_register_class(vm, &be_class_lv_point, &be_lv_point);
   ctypes_register_class(vm, &be_class_lv_sqrt_res, &be_lv_sqrt_res);
+  ctypes_register_class(vm, &be_class_lv_style_transition_dsc, &be_lv_style_transition_dsc);
+  ctypes_register_class(vm, &be_class_lv_timer, &be_lv_timer);
+  ctypes_register_class(vm, &be_class_lv_ts_calibration, &be_lv_ts_calibration);
 }
 
 be_ctypes_class_by_name_t be_ctypes_lvgl_classes[] = {
   { "lv_area", &be_class_lv_area },
+  { "lv_chart_cursor", &be_class_lv_chart_cursor },
+  { "lv_chart_series", &be_class_lv_chart_series },
+  { "lv_color_filter_dsc", &be_class_lv_color_filter_dsc },
   { "lv_draw_img_dsc", &be_class_lv_draw_img_dsc },
   { "lv_draw_line_dsc", &be_class_lv_draw_line_dsc },
   { "lv_draw_mask_angle_param", &be_class_lv_draw_mask_angle_param },
@@ -512,6 +634,8 @@ be_ctypes_class_by_name_t be_ctypes_lvgl_classes[] = {
   { "lv_draw_mask_saved", &be_class_lv_draw_mask_saved },
   { "lv_draw_rect_dsc", &be_class_lv_draw_rect_dsc },
   { "lv_event", &be_class_lv_event },
+  { "lv_img_dsc", &be_class_lv_img_dsc },
+  { "lv_img_header", &be_class_lv_img_header },
   { "lv_meter_indicator", &be_class_lv_meter_indicator },
   { "lv_meter_indicator_arc", &be_class_lv_meter_indicator_arc },
   { "lv_meter_indicator_needle_img", &be_class_lv_meter_indicator_needle_img },
@@ -521,6 +645,9 @@ be_ctypes_class_by_name_t be_ctypes_lvgl_classes[] = {
   { "lv_obj_class", &be_class_lv_obj_class },
   { "lv_point", &be_class_lv_point },
   { "lv_sqrt_res", &be_class_lv_sqrt_res },
+  { "lv_style_transition_dsc", &be_class_lv_style_transition_dsc },
+  { "lv_timer", &be_class_lv_timer },
+  { "lv_ts_calibration", &be_class_lv_ts_calibration },
 };
 const size_t be_ctypes_lvgl_classes_size = sizeof(be_ctypes_lvgl_classes)/sizeof(be_ctypes_lvgl_classes[0]);
 

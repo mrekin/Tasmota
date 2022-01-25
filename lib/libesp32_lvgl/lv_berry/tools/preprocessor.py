@@ -50,6 +50,7 @@ def clean_source(raw):
 
 lv_src_prefix = "../../lvgl/src/"
 lv_fun_globs = [ 
+                  "lv_api*.h",
                   "widgets/*.h",   # all widgets
                   # "extra/widgets/*/*.h",
                   "extra/widgets/chart/*.h",
@@ -62,9 +63,11 @@ lv_fun_globs = [
                   "extra/widgets/spinner/*.h",
                   "extra/themes/default/*.h",
                   "extra/themes/mono/*.h",
+                  "extra/layouts/**/*.h",
                   "core/*.h",
                   "draw/*.h",
                   "misc/lv_style_gen.h",
+                  "misc/lv_color.h",
                   #"misc/lv_area.h",
                   #"**/*.h",
               ]
@@ -85,6 +88,7 @@ print("""
 
 // Custom Tasmota functions
 void lv_img_set_tasmota_logo(lv_obj_t * img);
+lv_ts_calibration_t * lv_get_ts_calibration(void);
 
 // ======================================================================
 // Artificial
@@ -129,6 +133,8 @@ for header_name in headers_names:
     for fun in fun_defs:
       # remove LV_ATTRIBUTE_FAST_MEM 
       fun = re.sub('LV_ATTRIBUTE_FAST_MEM ', '', fun)
+      # remove LV_ATTRIBUTE_TIMER_HANDLER 
+      fun = re.sub('LV_ATTRIBUTE_TIMER_HANDLER ', '', fun)
       exclude = False
       for exclude_prefix in ["typedef", "_LV_", "LV_"]:
         if fun.startswith(exclude_prefix): exclude = True
@@ -170,7 +176,15 @@ sys.stdout.close()
 # ################################################################################
 
 lv_src_prefix = "../../lvgl/src/"
-lv_fun_globs = [ "**/*.h" ]
+lv_fun_globs = [ 
+                  "core/*.h",
+                  "draw/*.h",
+                  "hal/*.h",
+                  "misc/*.h",
+                  "widgets/*.h",
+                  "extra/widgets/**/*.h",
+                  "extra/layouts/**/*.h",
+              ]
 headers_names = list_files(lv_src_prefix, lv_fun_globs)
 
 output_filename = "../mapping/lv_enum.h"
@@ -179,17 +193,7 @@ print("""// ====================================================================
 // Functions
 // ======================================================================
 
-register_button_encoder=&lv0_register_button_encoder
-
-montserrat_font=&lv0_load_montserrat_font
-seg7_font=&lv0_load_seg7_font
-font_montserrat=&lv0_load_montserrat_font
-font_seg7=&lv0_load_seg7_font
-font_robotocondensed_latin1=&lv0_load_robotocondensed_latin1_font
 load_font=&lv0_load_font
-load_freetype_font=&lv0_load_freetype_font
-
-screenshot=&lv0_screenshot
 
 // ======================================================================
 // Colors
@@ -214,12 +218,23 @@ COLOR_NAVY=0x000080
 COLOR_MAGENTA=0xFF00FF
 COLOR_PURPLE=0x800080
 
+// Freetype
+FT_FONT_STYLE_NORMAL=FT_FONT_STYLE_NORMAL
+FT_FONT_STYLE_ITALIC=FT_FONT_STYLE_ITALIC
+FT_FONT_STYLE_BOLD=FT_FONT_STYLE_BOLD
+
 // following are #define, not enum
 LV_RADIUS_CIRCLE
 LV_TEXTAREA_CURSOR_LAST
 LV_STYLE_PROP_ANY
 
 LV_SIZE_CONTENT
+
+LV_GRID_FR=LV_GRID_FR(0)
+LV_GRID_CONTENT
+LV_GRID_TEMPLATE_LAST
+
+LV_OBJ_FLAG_FLEX_IN_NEW_TRACK
 
 // ======================================================================
 // Symbols
@@ -292,12 +307,11 @@ SYMBOL_BULLET="\\xE2\\x80\\xA2"
 // ======================================================================
 """)
 
-
-
 for header_name in headers_names:
   with open(header_name) as f:
     raw = clean_source(f.read())
 
+    print(f"// File: {header_name}")
     # extract enums
     enums = re.findall('enum\s+{(.*?)}', raw, flags=re.DOTALL)
     for enum in enums:  # iterate on all matches

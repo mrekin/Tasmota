@@ -22,7 +22,7 @@ parse_func_def = re.compile("(.*?)\s(\w+)\((.*?)\)")
 # parse call argument type
 # Ex: 'const lv_obj_t * parent' -> 'const ', 'lv_obj_t', ' * ', 'parent'
 # Ex: 'bool auto_fit' -> '', 'bool', ' ', 'auto_fit'
-parse_arg = re.compile("(\w+\s+)?(\w+)([\*\s]+)(\w+)")
+parse_arg = re.compile("(\w+\s+)?(\w+)([\*\s]+)(\w+)(\[\])?")
 
 return_types = {
   "void": "",
@@ -98,8 +98,20 @@ return_types = {
   "lv_colorwheel_mode_t": "i",
   "lv_scr_load_anim_t": "i",
   "lv_style_selector_t": "i",
+  "lv_draw_mask_res_t": "i",
+  "lv_img_size_mode_t": "i",
+  "lv_palette_t": "i",
+  # layouts
+  "lv_flex_align_t": "i",
+  "lv_flex_flow_t": "i",
+  "lv_grid_align_t": "i",
 
   "_lv_event_dsc_t *": "i",
+
+  # arrays
+  "char * []": "str_arr",
+  "lv_coord_t []": "lv_coord_arr",
+  "lv_point_t []": "lv_point_arr",
 
   # "lv_signal_cb_t": "c",
   # "lv_design_cb_t": "c",
@@ -111,6 +123,8 @@ return_types = {
   "lv_meter_scale_t *": "lv_meter_scale",
   "lv_meter_indicator_t *": "lv_meter_indicator",
   "lv_obj_class_t *": "lv_obj_class",
+  "lv_chart_series_t *": "lv_chart_series",
+  "lv_chart_cursor_t *": "lv_chart_cursor",
 
   "_lv_obj_t *": "lv_obj",
   "lv_obj_t *": "lv_obj",
@@ -121,8 +135,15 @@ return_types = {
   "lv_theme_t *": "lv_theme",
   "lv_disp_t *": "lv_disp",
   "lv_indev_t *": "lv_indev",
-  #"lv_disp_t*": "lv_disp",
-  #"lv_style_list_t*": "",
+  "lv_img_header_t *": "lv_img_header",
+  "lv_img_dsc_t *": "lv_img_dsc",
+  "lv_ts_calibration_t *": "lv_ts_calibration",
+  "lv_style_transition_dsc_t *": "lv_style_transition_dsc",
+  # "lv_color_hsv_t *": "lv_color_hsv",
+  "lv_color_filter_dsc_t *": "lv_color_filter_dsc",
+  "lv_timer_t *": "lv_timer",
+  "lv_coord_t *": "c",      # treat as a simple pointer, decoding needs to be done at Berry level
+  "char **": "c",      # treat as a simple pointer, decoding needs to be done at Berry level
 
   # callbacks
   "lv_group_focus_cb_t": "lv_group_focus_cb",
@@ -196,6 +217,7 @@ with open(lv_widgets_file) as f:
 
     g = parse_func_def.search(l_raw)
     if g:
+      # print(l_raw, g.group(3))
       # if match, we parse the line
       # Ex: 'void lv_obj_set_parent(lv_obj_t * obj, lv_obj_t * parent);'
       ret_type = g.group(1)   # return type of the function
@@ -215,37 +237,49 @@ with open(lv_widgets_file) as f:
       # convert arguments
       c_args = ""
       args_raw = [ x.strip(" \t\n\r") for x in g.group(3).split(",") ]  # split by comma and strip
+      # print(args_raw)
+      func_name = g.group(2)
       for arg_raw in args_raw:
-        # Ex: 'const lv_obj_t * parent' -> 'const ', 'lv_obj_t', ' * ', 'parent'
-        # Ex: 'bool auto_fit' -> '', 'bool', ' ', 'auto_fit'
+        # Ex: 'const lv_obj_t * parent' -> 'const ', 'lv_obj_t', ' * ', 'parent', ''
+        # Ex: 'bool auto_fit' -> '', 'bool', ' ', 'auto_fit', ''
+        # Ex: 'const lv_coord_t value[]' -> 'const', 'lv_coord_t', '', 'value', '[]'
         ga = parse_arg.search(arg_raw)
-        if ga:    # parsing ok?
-          ga_type = ga.group(2)
-          ga_ptr = ( ga.group(3).strip(" \t\n\r") == "*" )    # boolean
-          ga_name = ga.group(4)
-          ga_type_ptr = ga_type
-          if ga_ptr: ga_type_ptr += " *"
-          if ga_type_ptr in return_types:
-            ga_type = return_types[ga_type_ptr]
-          else:
-            # remove the trailing '_t' of type name if any
-            ga_type = re.sub(r"_t$", "", ga_type)
-          
-          # if the type is a single letter, we just add it
-          if len(ga_type) == 1 and ga_type != 'c':  # callbacks are different
-            c_args += ga_type
-          else:
-            if ga_type.endswith("_cb"):
-              # it's a callback type, we encode it differently
-              if ga_type not in lv_cb_types:
-                lv_cb_types.append(ga_type)
-              c_args += "^" + ga_type + "^"
+        # print(f"g={g} ga={ga}")
+        if ga or arg_raw == '...':    # parsing ok? Special case for '...' which can't be captured easily in regex
+          if arg_raw != '...':
+            ga_type = ga.group(2)
+            ga_ptr = ( ga.group(3).strip(" \t\n\r") == "*" )    # boolean
+            ga_name = ga.group(4)
+            ga_array = ga.group(5)
+            ga_type_ptr = ga_type
+            if ga_ptr: ga_type_ptr += " *"
+            if ga_array: ga_type_ptr += " []"
+            if ga_type_ptr in return_types:
+              ga_type = return_types[ga_type_ptr]
             else:
-              # we have a high-level type that we treat as a class name, enclose in parenthesis
-              c_args += "(" + "lv." + ga_type + ")"
+              # remove the trailing '_t' of type name if any
+              ga_type = re.sub(r"_t$", "", ga_type)
+            
+            # if the type is a single letter, we just add it
+            if len(ga_type) == 1 and ga_type != 'c':  # callbacks are different
+              c_args += ga_type
+            else:
+              if ga_type.endswith("_cb"):
+                if 'remove_' in func_name:    # if the call is to remove the cb, just treat as an 'anything' parameter
+                  c_args += "."
+                else:
+                  # it's a callback type, we encode it differently
+                  if ga_type not in lv_cb_types:
+                    lv_cb_types.append(ga_type)
+                  c_args += "^" + ga_type + "^"
+              else:
+                # we have a high-level type that we treat as a class name, enclose in parenthesis
+                c_args += "(" + "lv." + ga_type + ")"
+          else:
+            # '...'
+            c_args += "[......]"  # allow 6 additional parameters
 
       # analyze function name and determine if it needs to be assigned to a specific class
-      func_name = g.group(2)
       # Ex: func_name -> 'lv_obj_set_parent'
       if func_name.startswith("_"): continue            # skip low-level
       if func_name.startswith("lv_debug_"): continue    # skip debug
@@ -344,7 +378,7 @@ for subtype, flv in lv.items():
       pass
       # c_ret_type = f"+lv_{subtype}"
     else:
-      func_out[be_name] = f"  {{ \"{be_name}\", (void*) &{orig_func_name}, \"{c_ret_type}\", { c_argc if c_argc else 'nullptr'} }},"
+      func_out[be_name] = f"  {{ \"{be_name}\", {{ (const void*) &{orig_func_name}, \"{c_ret_type}\", { c_argc if c_argc else 'nullptr'} }} }},"
 
   for be_name in sorted(func_out):
     print(func_out[be_name])
@@ -433,11 +467,11 @@ extern int lco_init(bvm *vm);           // generic function
 extern int lco_tostring(bvm *vm);       // generic function
 extern int lco_toint(bvm *vm);          // generic function
 
-extern int lvx_member(bvm *vm);
-extern int lvx_tostring(bvm *vm);       // generic function
+extern int lv_x_member(bvm *vm);
+extern int lv_x_tostring(bvm *vm);       // generic function
 
-extern int lvs_init(bvm *vm);
-extern int lvs_tostring(bvm *vm);
+extern int lv_be_style_init(bvm *vm);
+extern int lv_x_tostring(bvm *vm);
 
 BE_EXPORT_VARIABLE extern const bclass be_class_lv_obj;
 
@@ -483,10 +517,10 @@ be_local_class(lv_style,
     NULL,
     be_nested_map(4,
     ( (struct bmapnode*) &(const bmapnode[]) {
-        { be_nested_key("init", 380752755, 4, -1), be_const_func(lvs_init) },
-        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lvs_tostring) },
+        { be_nested_key("init", 380752755, 4, -1), be_const_func(lv_be_style_init) },
+        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lv_x_tostring) },
         { be_nested_key("_p", 1594591802, 2, -1), be_const_var(0) },
-        { be_nested_key("member", 719708611, 6, 0), be_const_func(lvx_member) },
+        { be_nested_key("member", 719708611, 6, 0), be_const_func(lv_x_member) },
     })),
     (be_nested_const_str("lv_style", -143355747, 8))
 );
@@ -500,8 +534,8 @@ be_local_class(lv_obj,
     NULL,
     be_nested_map(5,
     ( (struct bmapnode*) &(const bmapnode[]) {
-        { be_nested_key("tostring", -1995258651, 8, 3), be_const_func(lvx_tostring) },
-        { be_nested_key("member", 719708611, 6, -1), be_const_func(lvx_member) },
+        { be_nested_key("tostring", -1995258651, 8, 3), be_const_func(lv_x_tostring) },
+        { be_nested_key("member", 719708611, 6, -1), be_const_func(lv_x_member) },
         { be_nested_key("_p", 1594591802, 2, -1), be_const_var(0) },
         { be_nested_key("init", 380752755, 4, 4), be_const_func(be_ntv_lv_obj_init) },
         { be_nested_key("_class", -1562820946, 6, -1), be_const_comptr(&lv_obj_class) },
@@ -519,9 +553,9 @@ be_local_class(lv_group,
     be_nested_map(4,
     ( (struct bmapnode*) &(const bmapnode[]) {
         { be_nested_key("init", 380752755, 4, -1), be_const_func(be_ntv_lv_group_init) },
-        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lvx_tostring) },
+        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lv_x_tostring) },
         { be_nested_key("_p", 1594591802, 2, -1), be_const_var(0) },
-        { be_nested_key("member", 719708611, 6, 0), be_const_func(lvx_member) },
+        { be_nested_key("member", 719708611, 6, 0), be_const_func(lv_x_member) },
     })),
     (be_nested_const_str("lv_group", -442928277, 8))
 );
@@ -536,9 +570,9 @@ be_local_class(lv_indev,
     be_nested_map(4,
     ( (struct bmapnode*) &(const bmapnode[]) {
         { be_nested_key("init", 380752755, 4, -1), be_const_func(lv0_init) },
-        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lvx_tostring) },
+        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lv_x_tostring) },
         { be_nested_key("_p", 1594591802, 2, -1), be_const_var(0) },
-        { be_nested_key("member", 719708611, 6, 0), be_const_func(lvx_member) },
+        { be_nested_key("member", 719708611, 6, 0), be_const_func(lv_x_member) },
     })),
     (be_nested_const_str("lv_indev", 225602374, 8))
 );
@@ -553,9 +587,9 @@ be_local_class(lv_disp,
     be_nested_map(4,
     ( (struct bmapnode*) &(const bmapnode[]) {
         { be_nested_key("init", 380752755, 4, -1), be_const_func(lv0_init) },
-        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lvx_tostring) },
+        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lv_x_tostring) },
         { be_nested_key("_p", 1594591802, 2, -1), be_const_var(0) },
-        { be_nested_key("member", 719708611, 6, 0), be_const_func(lvx_member) },
+        { be_nested_key("member", 719708611, 6, 0), be_const_func(lv_x_member) },
     })),
     (be_nested_const_str("lv_disp", 609712084, 8))
 );
@@ -570,7 +604,7 @@ be_local_class(lv_font,
     be_nested_map(3,
     ( (struct bmapnode*) &(const bmapnode[]) {
         { be_nested_key("init", 380752755, 4, -1), be_const_func(lvbe_font_create) },
-        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lvx_tostring) },
+        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lv_x_tostring) },
         { be_nested_key("_p", 1594591802, 2, -1), be_const_var(0) },
     })),
     (be_nested_const_str("lv_font", 1550958453, 7))
@@ -586,7 +620,7 @@ be_local_class(lv_theme,
     be_nested_map(3,
     ( (struct bmapnode*) &(const bmapnode[]) {
         { be_nested_key("init", 380752755, 4, -1), be_const_func(lvbe_theme_create) },
-        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lvx_tostring) },
+        { be_nested_key("tostring", -1995258651, 8, -1), be_const_func(lv_x_tostring) },
         { be_nested_key("_p", 1594591802, 2, -1), be_const_var(0) },
     })),
     (be_nested_const_str("lv_theme", 1550958453, 7))
@@ -655,21 +689,14 @@ print("""/********************************************************************
 
 #include "lvgl.h"
 #include "be_mapping.h"
+#include "lv_berry.h"
 #include "lv_theme_openhasp.h"
 
 extern int lv0_member(bvm *vm);     // resolve virtual members
-
-extern int lv0_start(bvm *vm);
-
-extern int lv0_register_button_encoder(bvm *vm);  // add buttons with encoder logic
-
-extern int lv0_load_montserrat_font(bvm *vm);
-extern int lv0_load_seg7_font(bvm *vm);
-extern int lv0_load_robotocondensed_latin1_font(bvm *vm);
 extern int lv0_load_font(bvm *vm);
-extern int lv0_load_freetype_font(bvm *vm);
 
-extern int lv0_screenshot(bvm *vm);
+extern lv_ts_calibration_t * lv_get_ts_calibration(void);
+
 
 static int lv_get_hor_res(void) {
   return lv_disp_get_hor_res(lv_disp_get_default());
@@ -694,7 +721,7 @@ for f in lv0:
   # if c_ret_type is an object, prefix with `lv.`
   if len(c_ret_type) > 1: c_ret_type = "lv." + c_ret_type
 
-  func_out[be_name] = f"  {{ \"{be_name}\", (void*) &{orig_func_name}, \"{c_ret_type}\", { c_argc if c_argc else 'nullptr'} }},"
+  func_out[be_name] = f"  {{ \"{be_name}\", {{ (const void*) &{orig_func_name}, \"{c_ret_type}\", { c_argc if c_argc else 'nullptr'} }} }},"
 
 for be_name in sorted(func_out):
   print(func_out[be_name])
@@ -750,27 +777,65 @@ for k in sorted(lv_module2):
   # otherwise it's an int, leave if unchanged
   if v is not None:
     v_prefix = ""
-    if v[0] == '"': v_prefix = "$"
-    if v[0] == '&': v_prefix = "&"
-    print(f"    {{ \"{v_prefix}{k}\", (int32_t) {v} }},")
+    v_macro = "be_cconst_int"
+    if v[0] == '"': v_prefix = "$"; v_macro = "be_cconst_string"
+    if v[0] == '&': v_prefix = "&"; v_macro = "be_cconst_ptr"
+    print(f"    {{ \"{v_prefix}{k}\", {v_macro}({v}) }},")
   else:
-    print(f"    {{ \"{k}\", LV_{k} }},")
+    print(f"    {{ \"{k}\", be_cconst_int(LV_{k}) }},")
 
 print("""
 };
 
 const size_t lv0_constants_size = sizeof(lv0_constants)/sizeof(lv0_constants[0]);
 
-/* generated */
+/********************************************************************
+** Solidified function: lv_module_init
+********************************************************************/
+be_local_closure(lv_lv_module_init,   /* name */
+  be_nested_proto(
+    3,                          /* nstack */
+    1,                          /* argc */
+    0,                          /* varg */
+    0,                          /* has upvals */
+    NULL,                       /* no upvals */
+    0,                          /* has sup protos */
+    NULL,                       /* no sub protos */
+    1,                          /* has constants */
+    ( &(const bvalue[ 3]) {     /* constants */
+    /* K0   */  be_nested_str(lv),
+    /* K1   */  be_nested_str(member),
+    /* K2   */  be_nested_str(lv_solidified),
+    }),
+    &be_const_str_lv_module_init,
+    &be_const_str_solidified,
+    ( &(const binstruction[ 7]) {  /* code */
+      0x6004000B,  //  0000  GETGBL	R1	G11
+      0x58080000,  //  0001  LDCONST	R2	K0
+      0x7C040200,  //  0002  CALL	R1	1
+      0x88080101,  //  0003  GETMBR	R2	R0	K1
+      0x90060202,  //  0004  SETMBR	R1	K1	R2
+      0x90060400,  //  0005  SETMBR	R1	K2	R0
+      0x80040200,  //  0006  RET	1	R1
+    })
+  )
+);
+/*******************************************************************/
+
+
+/********************************************************************
+** Solidified module: lv
+********************************************************************/
 be_local_module(lv,
     "lv",
     be_nested_map(2,
     ( (struct bmapnode*) &(const bmapnode[]) {
-        { be_nested_key("member", 719708611, 6, -1), be_const_func(lv0_member) },
-        { be_nested_key("start", 1697318111, 5, 0), be_const_func(lv0_start) },
+        { be_const_key(init, -1), be_const_closure(lv_lv_module_init_closure) },
+        { be_const_key(member, 0), be_const_func(lv0_member) },
     }))
 );
 BE_EXPORT_VARIABLE be_define_const_native_module(lv);
+/********************************************************************/
 """)
 
 print("/********************************************************************/")
