@@ -787,8 +787,9 @@ void ResponseAppendFeatures(void)
 #ifdef USE_SHIFT595
     feature8 |= 0x00080000;  // xdrv_60_shift595.ino
 #endif
-
-//    feature8 |= 0x00100000;
+#ifdef USE_CM1107
+    feature8 |= 0x00100000; // xsns_95_cm1107.ino
+#endif
 //    feature8 |= 0x00200000;
 //    feature8 |= 0x00400000;
 //    feature8 |= 0x00800000;

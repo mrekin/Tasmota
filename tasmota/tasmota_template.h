@@ -177,6 +177,7 @@ enum UserSelectablePins {
   GPIO_HM330X_SET,                     // HM330X SET pin (sleep when low)
   GPIO_HEARTBEAT, GPIO_HEARTBEAT_INV,
   GPIO_SHIFT595_SRCLK, GPIO_SHIFT595_RCLK, GPIO_SHIFT595_OE, GPIO_SHIFT595_SER,   // 74x595 Shift register
+  GPIO_CM11_TXD, GPIO_CM11_RXD,        // CM11 Serial interface
   GPIO_SENSOR_END };
 
 enum ProgramSelectablePins {
@@ -375,6 +376,7 @@ const char kSensorNames[] PROGMEM =
   D_SENSOR_HEARTBEAT "|" D_SENSOR_HEARTBEAT "_i|"
 
   D_GPIO_SHIFT595_SRCLK "|" D_GPIO_SHIFT595_RCLK "|" D_GPIO_SHIFT595_OE "|" D_GPIO_SHIFT595_SER "|"
+  D_SENSOR_CM11_TX "|" D_SENSOR_CM11_RX "|"
 ;
 
 const char kSensorNamesFixed[] PROGMEM =
@@ -900,6 +902,10 @@ const uint16_t kGpioNiceList[] PROGMEM = {
   AGPIO(GPIO_MAX7219CS),
 #endif  // USE_DISPLAY_MAX7219
 
+#ifdef USE_CM1107
+  AGPIO(GPIO_CM11_TXD),        // MH-Z19 Serial interface
+  AGPIO(GPIO_CM11_RXD),        // MH-Z19 Serial interface
+#endif
 /*-------------------------------------------------------------------------------------------*\
  * ESP32 specifics
 \*-------------------------------------------------------------------------------------------*/
