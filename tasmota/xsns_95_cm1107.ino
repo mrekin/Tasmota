@@ -75,8 +75,8 @@ enum CM11FilterOptions {CM1107_FILTER_OFF, CM1107_FILTER_FAST, CM1107_FILTER_MED
 TasmotaSerial *CM11Serial;
 
 
-const char ABC_ENABLED[] = "ABC is Enabled";
-const char ABC_DISABLED[] = "ABC is Disabled";
+const char CM11_ABC_ENABLED[] = "ABC is Enabled";
+const char CM11_ABC_DISABLED[] = "ABC is Disabled";
 
 //First [0] element - lenght of cmd and data
 const uint8_t cmd_read[] = {0x01,0x01};   // cm11_cmnd_read_ppm
@@ -320,12 +320,12 @@ bool CM11CommandSensor(void)
     case 0:
       Settings->SensorBits1.mhz19b_abc_disable = true;
       CM11SendCmd(CM11_CMND_ABCDISABLE);
-      Response_P(S_JSON_SENSOR_INDEX_SVALUE, XSNS_95, ABC_DISABLED);
+      Response_P(S_JSON_SENSOR_INDEX_SVALUE, XSNS_95, CM11_ABC_DISABLED);
       break;
     case 1:
       Settings->SensorBits1.mhz19b_abc_disable = false;
       CM11SendCmd(CM11_CMND_ABCENABLE);
-      Response_P(S_JSON_SENSOR_INDEX_SVALUE, XSNS_95, ABC_ENABLED);
+      Response_P(S_JSON_SENSOR_INDEX_SVALUE, XSNS_95, CM11_ABC_ENABLED);
       break;
     case 2:
       CM11SendCmd(CM11_CMND_ZEROPOINT); 
@@ -351,7 +351,7 @@ bool CM11CommandSensor(void)
             cmd_abc_enable[4] = parm[1]; //set uint8 from uint32 *o*, but value limited by 30
             Settings->SensorBits1.mhz19b_abc_disable = false;
             CM11SendCmd(CM11_CMND_ABCENABLE);
-            Response_P(S_JSON_SENSOR_INDEX_SVALUE, XSNS_95, ABC_ENABLED);
+            Response_P(S_JSON_SENSOR_INDEX_SVALUE, XSNS_95, CM11_ABC_ENABLED);
           } else {
             Response_P(S_JSON_SENSOR_INDEX_SVALUE, XSNS_95, "Valid period value: [1..30]");
           }
